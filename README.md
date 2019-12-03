@@ -1,7 +1,7 @@
 Description of a big data pipeline setup and testing, using:
 
 
-- [kafka docker-image from wurstmeister](https://github.com/wurstmeister/kafka-docker)
+- base [kafka docker-image from wurstmeister](https://github.com/wurstmeister/kafka-docker)
 - [hbase docker-image from big-data-europe](https://github.com/big-data-europe/docker-hbase)
 - `Spark 2.11`
 
@@ -54,6 +54,7 @@ $KAFKA_HOME/bin/kafka-topics.sh --list --zookeeper zookeeper:2181
 `
 $KAFKA_HOME/bin/kafka-console-producer.sh --topic SensorData --broker-list 172.18.0.2:9092
 `
+
 - Start consumer  
 `
 $KAFKA_HOME/bin/kafka-console-consumer.sh --bootstrap-server 172.18.0.2:9092  --topic SensorData --from-beg
@@ -183,14 +184,12 @@ object SensorDataProducer extends App {
 
   try {
     for (i <- 0 to 50) {
-      Thread.sleep(5000)
-      val record = new ProducerRecord[String, String](topicA, i.toString, messageProducer.getMessage("A"))
-      val metadata = producer.send(record)
-      val record2 = new ProducerRecord[String, String](topicA, i.toString, messageProducer.getMessage("B"))
-      val metadata2 = producer.send(record2)
-      val record3 = new ProducerRecord[String, String](topicA, i.toString, messageProducer.getMessage("C"))
-      val metadata3 = producer.send(record3)
-
+      val sensors = Array("A", "B", "C")
+      for (s <- sensors) {
+        Thread.sleep(1000)
+        val record = new ProducerRecord[String, String](topicA, i.toString, messageProducer.getMessage(s))
+        val metadata = producer.send(record)
+      }
     }
   }catch{
     case e:Exception => e.printStackTrace()
