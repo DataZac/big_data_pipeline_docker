@@ -67,7 +67,7 @@ $KAFKA_HOME/bin/kafka-console-consumer.sh --bootstrap-server 172.18.0.2:9092  --
 inning
 `
 
-# Example producer and SparkStreaming-consumer 
+### Example producer and SparkStreaming-consumer 
 
 - To connect to the broker with the spark streaming kafka api, use localhost on the exposed port 9092.
 
@@ -78,8 +78,6 @@ inning
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
     </dependency>
-
-    <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -107,19 +105,16 @@ inning
       <artifactId>kafka-clients</artifactId>
       <version>2.1.0</version>
     </dependency>
-
       <dependency>
           <groupId>org.apache.spark</groupId>
           <artifactId>spark-streaming_2.11</artifactId>
           <version>2.1.0</version>
       </dependency>
-
       <dependency>
           <groupId>org.apache.spark</groupId>
           <artifactId>spark-core_2.11</artifactId>
           <version>2.1.0</version>
       </dependency>
-
     <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
@@ -137,38 +132,31 @@ inning
       <version>2.2.4</version>
       <scope>test</scope>
     </dependency>
-
-
       <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-client</artifactId>
           <version>1.3.1</version>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-common -->
       <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-common</artifactId>
           <version>1.3.1</version>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-protocol -->
       <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-protocol</artifactId>
           <version>1.3.1</version>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-hadoop2-compat -->
       <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-hadoop2-compat</artifactId>
           <version>1.3.1</version>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-annotations -->
       <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-annotations</artifactId>
           <version>1.3.1</version>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-server -->
       <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-server</artifactId>
@@ -255,4 +243,4 @@ object StreamingConsumer extends App {
 }
 ```
 - Test output:
-[producer_consumer_test.png]
+![](/producer_consumer_test.png)
