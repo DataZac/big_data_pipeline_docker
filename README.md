@@ -5,7 +5,7 @@ Description of a big data pipeline setup and testing, using:
 - [hbase docker-image from big-data-europe](https://github.com/big-data-europe/docker-hbase)
 - `Spark 2.11`
 
-### Kafka
+## Kafka
 
 Edit the `docker-compose.yml`:
 ```
@@ -36,42 +36,35 @@ To expose the internal port 9093 of kafka brokers to make it availble from outsi
 
 - To test kafka with zookeeper from inside the docker container, get the internal ip of the kafka broker with `docker inspect kafka-docker-master-kafka_1`. In This case `172.18.0.2:9092`
 
-- To test kafka, go inside the kafka shell / the kafka container:
-
+- To test kafka, go inside the kafka shell / the kafka container:  
 `
 docker exec -it kafka-docker-master_kafka_1  /bin/bash
 `
 
-- Create topic and view:
-
-`
+- Create topic and view:  
+```
 $KAFKA_HOME/bin/kafka-topics.sh --create --bootstrap-server 172.18.0.2:9092 --replication-factor 1 --partit
 ions 1 --topic SensorData
-`
-
-`
-
+```  
+```
 $KAFKA_HOME/bin/kafka-topics.sh --list --zookeeper zookeeper:2181
-` 
+``` 
 
-- Start producer 
-
+- Start producer  
 `
 $KAFKA_HOME/bin/kafka-console-producer.sh --topic SensorData --broker-list 172.18.0.2:9092
 `
-
-- Start consumer
-
+- Start consumer  
 `
 $KAFKA_HOME/bin/kafka-console-consumer.sh --bootstrap-server 172.18.0.2:9092  --topic SensorData --from-beg
 inning
 `
 
-### Example producer and SparkStreaming-consumer 
+## Spark producer and streaming consumer 
 
 - To connect to the broker with the spark streaming kafka api, use localhost on the exposed port 9092.
 
-- Dependencies / `pom.xml`
+- Dependencies / `pom.xml`  
 ```
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -163,7 +156,7 @@ inning
           <version>1.3.1</version>
       </dependency>
 ```      
-- Start a producer which mocks 3 sensors that send data every second to the kafka topic
+- Start a producer which mocks 3 sensors that send data every 5 seconds to the kafka topic:  
 ```
 import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
@@ -206,7 +199,7 @@ object SensorDataProducer extends App {
   }
 }
 ```
-- Spark streaming consumer to read messages from the topic:
+- Spark streaming consumer to read messages from the topic:  
 ```
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.{ SparkConf, SparkContext }
@@ -242,5 +235,7 @@ object StreamingConsumer extends App {
   ssc.awaitTermination()
 }
 ```
-- Test output:
-![](/producer_consumer_test.png)
+- Test output:  
+![](/producer_consumer_demo.png?raw=true)
+
+
