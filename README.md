@@ -1,8 +1,8 @@
 Description of a big data pipeline setup and testing, using:
 
 
-- base [kafka docker-image from wurstmeister](https://github.com/wurstmeister/kafka-docker)
-- [hbase docker-image from big-data-europe](https://github.com/big-data-europe/docker-hbase)
+- fork of [kafka docker-image from wurstmeister](https://github.com/wurstmeister/kafka-docker)
+- fork of [hbase docker-image from dajobe](https://github.com/dajobe/hbase-docker)
 - `Spark 2.11`
 
 ## Kafka
@@ -65,7 +65,7 @@ inning
 
 - To connect to the broker with the spark streaming kafka api, use localhost on the exposed port 9092.
 
-- Dependencies / `pom.xml`  
+- Maven dependencies / `pom.xml`  
 ```
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -237,4 +237,118 @@ object StreamingConsumer extends App {
 - Test output:  
 ![](/producer_consumer_demo.png?raw=true)
 
+## hbase
 
+Note: this is a setup for Windows 10  
+
+To setup hbase docker image to work with proper connectivity, we need to edit the `etc/host file` to specify a domain mapping for the docker container.  Run:  
+`
+ docker run -p 8080:8080 -p 8085:8085 -p 9090:9090 -p 9095:9095 -p 2181:2181 -p 16010:16010 --name=hbase-docker -h hbase-docker -d -v $PWD/data:/data dajobe/hbase
+ `  
+ 
+ 
+ - Get `IPAddress:` and `Hostname` from ` docker inspect CONTAINER_ID`  
+ 
+ - Add a line with `IPAddress Hostname` to `C:\Windows\System32\drivers\etc`  
+ 
+ - Enter hbase shell with `docker exec -it hbase-docker /bin/bash` and `hbase shell`  
+ 
+ 
+ - Create a table:  
+ 
+ ```
+ create 'sensorData', 'measuredData'
+ ```
+ 
+ - Connect to hbase from outside docker via thrift and python:  
+ 
+ ```
+ import happybase
+import random
+connection = happybase.Connection('localhost', 9090)
+connection.tables()
+table = connection.table('sensorData')
+
+for i in range(100):
+	m = {'device':['A','B'][random.randint(0,1)], 'timestamp':random.randint(0,99999999), 'lat':random.randint(0,99999999),
+		 'lon': random.randint(0,99999999), 'temp':random.randint(0,99999999)}
+	print('inserting', m)
+	table.put(m['device']+'_'+str(m['timestamp']),
+		 {'measuredData:lat': str(m['lat']),
+		  'measuredData:lon': str(m['lon']), 
+		  'measuredData:temp': str(m['temp'])})
+	print('done',i)
+
+for k, data in table.scan():
+   print (k, data)
+ ```
+ 
+ - Test scan from hbase shell `scan sensorData`:  
+![](/hbase_scan.png?raw=true)
+
+- Connect to hbase from scala    
+
+```
+import org.apache.hadoop.hbase.{ HBaseConfiguration, HTableDescriptor, HColumnDescriptor }
+import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableOutputFormat }
+import org.apache.hadoop.hbase.client.{ HBaseAdmin, Put, HTable }
+import org.apache.hadoop.hbase.client.Scan
+import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.{CellUtil, HBaseConfiguration, TableName}
+import org.apache.hadoop.conf.Configuration
+import scala.collection.JavaConverters._
+import org.apache.log4j.BasicConfigurator
+
+object ScalaHBaseExample extends App{
+  BasicConfigurator.configure()
+
+  def printRow(result : Result) = {
+    val cells = result.rawCells();
+    print( Bytes.toString(result.getRow) + " : " )
+    for(cell <- cells){
+      val col_name = Bytes.toString(CellUtil.cloneQualifier(cell))
+      val col_value = Bytes.toString(CellUtil.cloneValue(cell))
+      print("(%s,%s) ".format(col_name, col_value))
+    }
+    println()
+  }
+
+  val conf : Configuration = HBaseConfiguration.create()
+
+  conf.set("hbase.zookeeper.quorum", "localhost");
+  conf.set("hbase.zookeeper.property.clientPort", "2181");
+  conf.set("timeout", "10000");
+  conf.set("hbase.master", "localhost:16010");
+
+  val connection = ConnectionFactory.createConnection(conf)
+  val table = connection.getTable(TableName.valueOf( Bytes.toBytes("table-name") ) )
+/*
+  // Put example
+  var put = new Put(Bytes.toBytes("row1"))
+  put.addColumn(Bytes.toBytes("d"), Bytes.toBytes("test_column_name"), Bytes.toBytes("test_value"))
+  put.addColumn(Bytes.toBytes("d"), Bytes.toBytes("test_column_name2"), Bytes.toBytes("test_value2"))
+  table.put(put)
+
+  */
+    println("Get Example:")
+    var get = new Get(Bytes.toBytes("table-name, row-key"))
+    var result = table.get(get)
+    printRow(result)
+  /*
+  //Scan example
+  println("\nScan Example:")
+  var scan = table.getScanner(new Scan())
+  println("now")
+  scan.asScala.foreach(result => {
+    println("now")
+    printRow(result)
+  })
+*/
+  table.close()
+  connection.close()
+}
+```
+ 
+ 
