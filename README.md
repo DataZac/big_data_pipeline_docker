@@ -286,7 +286,7 @@ for k, data in table.scan():
  - Test scan from hbase shell `scan sensorData`:  
 ![](/hbase_scan.png?raw=true)
 
-- Connect to hbase from scala    
+- Connect to hbase from scala by running:
 
 ```
 import org.apache.hadoop.hbase.{ HBaseConfiguration, HTableDescriptor, HColumnDescriptor }
@@ -301,7 +301,7 @@ import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
 import org.apache.log4j.BasicConfigurator
 
-object ScalaHBaseExample extends App{
+object ScalaHBaseScanner extends App{
   BasicConfigurator.configure()
 
   def printRow(result : Result) = {
@@ -316,39 +316,24 @@ object ScalaHBaseExample extends App{
   }
 
   val conf : Configuration = HBaseConfiguration.create()
-
   conf.set("hbase.zookeeper.quorum", "localhost");
   conf.set("hbase.zookeeper.property.clientPort", "2181");
   conf.set("timeout", "10000");
   conf.set("hbase.master", "localhost:16010");
-
   val connection = ConnectionFactory.createConnection(conf)
   val table = connection.getTable(TableName.valueOf( Bytes.toBytes("table-name") ) )
-/*
-  // Put example
-  var put = new Put(Bytes.toBytes("row1"))
-  put.addColumn(Bytes.toBytes("d"), Bytes.toBytes("test_column_name"), Bytes.toBytes("test_value"))
-  put.addColumn(Bytes.toBytes("d"), Bytes.toBytes("test_column_name2"), Bytes.toBytes("test_value2"))
-  table.put(put)
 
-  */
-    println("Get Example:")
-    var get = new Get(Bytes.toBytes("table-name, row-key"))
-    var result = table.get(get)
-    printRow(result)
-  /*
-  //Scan example
-  println("\nScan Example:")
+  //Scan
   var scan = table.getScanner(new Scan())
   println("now")
   scan.asScala.foreach(result => {
     println("now")
     printRow(result)
   })
-*/
+
   table.close()
   connection.close()
 }
 ```
  
- 
+ - 
